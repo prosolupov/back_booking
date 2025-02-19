@@ -2,8 +2,9 @@ from fastapi import APIRouter, Query
 
 from src.database import async_session_maker
 from src.schemas.hotels import HotelsSchema, HotelsSchemaPUTCH
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, func
 from src.models.hotels import HotelsOrm
+from src.repositories.hotels import HotelsRepository
 
 router = APIRouter(
     prefix='/hotels',
@@ -19,11 +20,13 @@ async def create_hotel(hotel_data: HotelsSchema):
     :param hotel_data: HotelOrm (title: str, location: str)
     """
     async with async_session_maker() as session:
-        add_hotel_stmt = insert(HotelsOrm).values(**hotel_data.model_dump())
-        print(add_hotel_stmt.compile(compile_kwargs={"literal_binds": True}))
-        await session.execute(add_hotel_stmt)
+        hotel = await HotelsRepository(session).add(**hotel_data.model_dump())
+        # add_hotel_stmt = insert(HotelsOrm).values(**hotel_data.model_dump())
+        # print(add_hotel_stmt.compile(compile_kwargs={"literal_binds": True}))
+        # await session.execute(add_hotel_stmt)
         await session.commit()
-        return {"status": "ok"}
+
+        return {"status": "ok", "data": hotel}
 
 
 @router.get('')
@@ -44,23 +47,13 @@ async def get_hotels(
     """
 
     per_page = per_page or 5
-
     async with async_session_maker() as session:
-        hotels_query = select(HotelsOrm)
-        if location:
-            hotels_query = hotels_query.filter(HotelsOrm.location.like(f'%{location}%'))
-        if title:
-            hotels_query = hotels_query.filter(HotelsOrm.title.like(f'%{title}%'))
-
-        hotels_query = (
-            hotels_query
-            .limit(per_page)
-            .offset(per_page * (page - 1))
+        return await HotelsRepository(session).get_all(
+            location=location,
+            title=title,
+            limit=per_page,
+            offset=per_page * (page - 1)
         )
-
-        results = await session.execute(hotels_query)
-
-    return results.scalars().all()
 
 
 @router.put("/{hotel_id}")
