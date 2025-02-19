@@ -1,11 +1,11 @@
 from pydantic import BaseModel
 
 
-class Hotel(BaseModel):
+class HotelsSchema(BaseModel):
     title: str
-    name: str
+    location: str
 
 
-class HotelPUTCH(BaseModel):
+class HotelsSchemaPUTCH(BaseModel):
     title: str | None = None
-    name: str | None = None
+    location: str | None = None
