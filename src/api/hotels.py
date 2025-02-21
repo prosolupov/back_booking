@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 
 from src.database import async_session_maker
 from src.schemas.hotels import HotelsSchema, HotelsSchemaPUTCH
@@ -20,10 +20,7 @@ async def create_hotel(hotel_data: HotelsSchema):
     :param hotel_data: HotelOrm (title: str, location: str)
     """
     async with async_session_maker() as session:
-        hotel = await HotelsRepository(session).add(**hotel_data.model_dump())
-        # add_hotel_stmt = insert(HotelsOrm).values(**hotel_data.model_dump())
-        # print(add_hotel_stmt.compile(compile_kwargs={"literal_binds": True}))
-        # await session.execute(add_hotel_stmt)
+        hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
 
         return {"status": "ok", "data": hotel}
@@ -56,18 +53,26 @@ async def get_hotels(
         )
 
 
-@router.put("/{hotel_id}")
-def edit_all_hotel(hotel_id: int, schema_hotel: HotelsSchema):
-    global hotels
+@router.get('/{hotel_id}')
+async def get_one(hotel_id: int):
+    async with async_session_maker() as session:
+        return await HotelsRepository(session).get_one_or_none(id=hotel_id)
 
-    hotel = [hotel for hotel in hotels if hotel['id'] == hotel_id][0]
-    hotel['title'] = schema_hotel.title
-    hotel['name'] = schema_hotel.name
-    return {'status': 'ok'}
+
+@router.put("/{hotel_id}")
+async def edit_all_hotel(hotel_id: int, schema_hotel: HotelsSchema):
+    async with async_session_maker() as session:
+        hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
+        if hotel:
+            await HotelsRepository(session).edit(schema_hotel, id=hotel_id)
+            await session.commit()
+            return {'status': 'ok'}
+
+        raise HTTPException(status_code=404, detail='Item not found')
 
 
 @router.patch("/{hotel_id}")
-def edit_one_param_hotel(hotel_id: int, schema_hotel: HotelsSchemaPUTCH):
+async def edit_one_param_hotel(hotel_id: int, schema_hotel: HotelsSchemaPUTCH):
     global hotels
     hotel = [hotel for hotel in hotels if hotel['id'] == hotel_id][0]
 
@@ -77,3 +82,15 @@ def edit_one_param_hotel(hotel_id: int, schema_hotel: HotelsSchemaPUTCH):
         hotel['title'] = schema_hotel.title
 
     return {'status': 'ok'}
+
+
+@router.delete("/{hotel_id}")
+async def delete_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+        hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
+        if hotel:
+            await HotelsRepository(session).delete(id=hotel_id)
+            await session.commit()
+            return {"status": "ok"}
+
+        raise HTTPException(status_code=404, detail="Item not found")
