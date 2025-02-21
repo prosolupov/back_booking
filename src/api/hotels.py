@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 
 from src.database import async_session_maker
-from src.schemas.hotels import HotelsSchema, HotelsSchemaPUTCH
+from src.schemas.hotels import SHotelsAdd, SHotelsPUTCH
 from sqlalchemy import insert, select, func
 from src.models.hotels import HotelsOrm
 from src.repositories.hotels import HotelsRepository
@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.post("")
-async def create_hotel(hotel_data: HotelsSchema):
+async def create_hotel(hotel_data: SHotelsAdd):
     """
     Ручка на создания нового отеля
 
@@ -60,7 +60,7 @@ async def get_one(hotel_id: int):
 
 
 @router.put("/{hotel_id}")
-async def edit_all_hotel(hotel_id: int, schema_hotel: HotelsSchema):
+async def edit_all_hotel(hotel_id: int, schema_hotel: SHotelsAdd):
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
         if hotel:
@@ -72,7 +72,7 @@ async def edit_all_hotel(hotel_id: int, schema_hotel: HotelsSchema):
 
 
 @router.patch("/{hotel_id}")
-async def edit_one_param_hotel(schema_hotel: HotelsSchemaPUTCH, hotel_id: int):
+async def edit_one_param_hotel(schema_hotel: SHotelsPUTCH, hotel_id: int):
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
         if hotel:
