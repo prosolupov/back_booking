@@ -55,12 +55,23 @@ async def get_hotels(
 
 @router.get('/{hotel_id}')
 async def get_one(hotel_id: int):
+    """
+    Ручка для получения одного отеля по id
+    :param hotel_id:
+    :return: Hotel
+    """
     async with async_session_maker() as session:
         return await HotelsRepository(session).get_one_or_none(id=hotel_id)
 
 
 @router.put("/{hotel_id}")
 async def edit_all_hotel(hotel_id: int, schema_hotel: SHotelsAdd):
+    """
+    Ручкка для редактирования отеля
+    :param hotel_id:
+    :param schema_hotel:
+    :return:
+    """
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
         if hotel:
@@ -73,6 +84,12 @@ async def edit_all_hotel(hotel_id: int, schema_hotel: SHotelsAdd):
 
 @router.patch("/{hotel_id}")
 async def edit_one_param_hotel(schema_hotel: SHotelsPUTCH, hotel_id: int):
+    """
+    Ручкка для частичного редактирования отеля
+    :param schema_hotel:
+    :param hotel_id:
+    :return:
+    """
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
         if hotel:
@@ -83,9 +100,13 @@ async def edit_one_param_hotel(schema_hotel: SHotelsPUTCH, hotel_id: int):
         raise HTTPException(status_code=404, detail='Item not found')
 
 
-
 @router.delete("/{hotel_id}")
 async def delete_hotel(hotel_id: int):
+    """
+    Ручка для отеля по id
+    :param hotel_id:
+    :return:
+    """
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).get_one_or_none(id=hotel_id)
         if hotel:
