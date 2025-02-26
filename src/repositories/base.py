@@ -52,9 +52,20 @@ class BaseRepository:
         return self.schema.model_validate(model, from_attributes=True)
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False,  **filter_by) -> None:
+        """
+        Функция по изменению записи в БД
+        :param data: Pydantic Shema
+        :param exclude_unset: Флаг put или puch
+        :param filter_by:
+        """
         stmt = update(self.model).filter_by(**filter_by).values(**data.model_dump(exclude_unset=exclude_unset))
         await self.session.execute(stmt)
 
     async def delete(self, **filter_by) -> None:
+        """
+        Функция по удалению записи из БД
+        :param filter_by:
+        :return: None
+        """
         stmt = delete(self.model).filter_by(**filter_by)
         await self.session.execute(stmt)

@@ -6,6 +6,10 @@ from src.schemas.users import SUsersRequestAdd, SUsersAdd
 from src.services.auth import AuthService
 from src.repositories.users import UsersRepository
 
+"""
+Auth Service
+"""
+
 router = APIRouter(
     prefix="/auth",
     tags=["Auth"],

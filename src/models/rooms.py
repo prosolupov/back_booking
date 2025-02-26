@@ -3,6 +3,10 @@ from sqlalchemy import ForeignKey
 from src.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
+"""
+Rooms Model
+"""
+
 
 class RoomsOrm(Base):
     __tablename__ = 'rooms'

@@ -15,6 +15,14 @@ class HotelsRepository(BaseRepository):
             limit: int,
             offset: int
     ) -> list[SHotels]:
+        """
+        Функция по получению всех отелей
+        :param location:
+        :param title:
+        :param limit:
+        :param offset:
+        :return: Pydantic схему
+        """
         query = select(HotelsOrm)
 
         if location:

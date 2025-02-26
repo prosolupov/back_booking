@@ -2,6 +2,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database import Base
 
+"""
+Users Model
+"""
+
 
 class UsersOrm(Base):
     __tablename__ = 'users'
