@@ -2,8 +2,6 @@ from fastapi import APIRouter, Query, HTTPException
 
 from src.database import async_session_maker
 from src.schemas.hotels import SHotelsAdd, SHotelsPUTCH
-from sqlalchemy import insert, select, func
-from src.models.hotels import HotelsOrm
 from src.repositories.hotels import HotelsRepository
 
 router = APIRouter(

@@ -9,8 +9,22 @@ class SRoomsAdd(BaseModel):
     quantity: int
 
 
+class SRoomsAddRequest(BaseModel):
+    title: str
+    description: str
+    price: int
+    quantity: int
+
+
 class SRooms(SRoomsAdd):
     id: int
+
+
+class SRoomsEditPUTCHRequest(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    price: int | None = None
+    quantity: int | None = None
 
 
 class SRoomsEditPUTCH(BaseModel):
