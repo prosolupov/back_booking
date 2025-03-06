@@ -1,10 +1,9 @@
 from fastapi import APIRouter, HTTPException, Response
 
 from src.api.dependencies import UserIdDep
-from src.database import async_session_maker
-from src.schemas.users import SUsersRequestAdd, SUsersAdd
+from src.schemas.users import SUsersRequestAdd, SUsersAdd, SUsersRequestAuth
 from src.services.auth import AuthService
-from src.repositories.users import UsersRepository
+from src.api.dependencies import DBDep
 
 """
 Auth Service
@@ -17,7 +16,7 @@ router = APIRouter(
 
 
 @router.post("/register")
-async def register_user(users: SUsersRequestAdd):
+async def register_user(users: SUsersRequestAdd, db: DBDep):
     """
     Ручка для регистрации пользователей
     :param users:
@@ -30,16 +29,15 @@ async def register_user(users: SUsersRequestAdd):
         email=users.email,
         hashed_password=hashed_password,
     )
-    async with async_session_maker() as session:
-        await UsersRepository(session).add(new_user_data)
-        await session.commit()
-
+    await db.users.add(new_user_data)
+    await db.commit()
     return {'message': 'Ok'}
 
 
 @router.post("/login")
 async def login_user(
-        data: SUsersRequestAdd,
+        db: DBDep,
+        data: SUsersRequestAuth,
         response: Response
 ):
     """
@@ -48,18 +46,17 @@ async def login_user(
     :param response:
     :return: jwt token
     """
-    async with async_session_maker() as session:
-        user = await UsersRepository(session).get_user_with_hashed_password(data.email)
-        if not user:
-            raise HTTPException(status_code=401, detail="Email doesn't exist")
+    user = await db.users.get_user_with_hashed_password(data.email)
+    if not user:
+        raise HTTPException(status_code=401, detail="Email doesn't exist")
 
-        if not AuthService().verify_password(data.password, user.hashed_password):
-            raise HTTPException(status_code=401, detail="Incorrect password")
+    if not AuthService().verify_password(data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect password")
 
-        access_token = AuthService().create_access_token({'id': user.id})
-        response.set_cookie('access_token', access_token)
+    access_token = AuthService().create_access_token({'id': user.id})
+    response.set_cookie('access_token', access_token)
 
-        return {'access_token': access_token}
+    return {'access_token': access_token}
 
 
 @router.post("/logout")
@@ -74,12 +71,11 @@ async def logout_user(response: Response):
 
 
 @router.get("/me")
-async def get_me(user_id: UserIdDep):
+async def get_me(db: DBDep, user_id: UserIdDep):
     """
     Ручка для получения jwt tokena из cookies
     :param user_id:
     :return: user
     """
-    async with async_session_maker() as session:
-        user = await UsersRepository(session).get_one_or_none(id=user_id)
-        return user
+    user = await db.users.get_one_or_none(id=user_id)
+    return user

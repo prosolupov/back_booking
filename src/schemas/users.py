@@ -15,6 +15,11 @@ class SUsersRequestAdd(BaseModel):
     password: str
 
 
+class SUsersRequestAuth(BaseModel):
+    email: EmailStr
+    password: str
+
+
 class SUsersAdd(BaseModel):
     first_name: str
     last_name: str
