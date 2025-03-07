@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Query, HTTPException
 
 from src.schemas.rooms import SRoomsAdd, SRoomsAddRequest, SRoomsEditPUTCHRequest, SRoomsEditPUTCH
-from src.database import async_session_maker
-from src.repositories.rooms import RoomsRepository
 from src.api.dependencies import DBDep
 
 router = APIRouter(
