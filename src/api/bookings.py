@@ -15,11 +15,43 @@ async def create_booking(
         user_id: UserIdDep,
         data_booking: SBookingRequest,
 ):
+    """
+    Ручка для добовления бронирований
+    :param db:
+    :param user_id:
+    :param data_booking:
+    :return: status
+    """
+
     room = await db.rooms.get_one_or_none(id=data_booking.room_id)
     if room is None:
         raise HTTPException(status_code=400, detail="Room not found")
 
-    _booking = SBookingAdd(user_id=user_id, price=room.price, **data_booking.model_dump())
-    await db.bookings.add(_booking)
+    _add_booking = SBookingAdd(user_id=user_id, price=room.price, **data_booking.model_dump())
+    booking = await db.bookings.add(_add_booking)
     await db.commit()
-    return {"user_id": room.price}
+    return {"status": "ok", "data": booking}
+
+
+@router.get("")
+async def get_all_bookings(db: DBDep):
+    """
+    Ручка на получения всех бронирований
+    :param db:
+    :return:
+    """
+    return await db.bookings.get_all()
+
+
+@router.get("/me")
+async def get_me_booking(
+        db: DBDep,
+        user_id: UserIdDep,
+):
+    """
+    Ручка на получения бронирований пользователя
+    :param db:
+    :param user_id:
+    :return:
+    """
+    return await db.bookings.get_filtered(user_id=user_id)

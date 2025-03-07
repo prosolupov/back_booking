@@ -10,6 +10,10 @@ class SBookingAdd(BaseModel):
     price: int
 
 
+class SBooking(SBookingAdd):
+    id: int
+
+
 class SBookingRequest(BaseModel):
     room_id: int
     date_from: date
