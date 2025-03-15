@@ -53,7 +53,8 @@ class HotelsRepository(BaseRepository):
             offset: int,
             date_to: date,
             date_from: date,
-    ):
+    ) -> list[SHotels]:
+
         rooms_ids_to_get = rooms_ids_for_booking(date_to=date_to, date_from=date_from, limit=limit, offset=offset)
 
         hotels_ids_to_get = select(RoomsOrm.hotel_id)
@@ -68,6 +69,6 @@ class HotelsRepository(BaseRepository):
             .filter(RoomsOrm.id.in_(rooms_ids_to_get))
         )
 
-        print(rooms_ids_to_get.compile(compile_kwargs={"literal_binds": True}))
+        # print(rooms_ids_to_get.compile(compile_kwargs={"literal_binds": True}))
 
         return await self.get_filtered(HotelsOrm.id.in_(hotels_ids_to_get))

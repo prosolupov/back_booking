@@ -16,6 +16,7 @@ async def create_hotel(hotel_data: SHotelsAdd, db: DBDep):
     """
     Ручка на создания нового отеля
 
+    :param db:
     :param hotel_data: HotelOrm (title: str, location: str)
     """
     hotel = await db.hotels.add(hotel_data)
