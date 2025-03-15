@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Query, HTTPException
 
 from src.schemas.hotels import SHotelsAdd, SHotelsPUTCH
@@ -24,6 +26,8 @@ async def create_hotel(hotel_data: SHotelsAdd, db: DBDep):
 @router.get('')
 async def get_hotels(
         db: DBDep,
+        date_to: date = Query(example="2025-03-09"),
+        date_from: date = Query(example="2025-03-15"),
         location: str | None = Query(None),
         title: str | None = Query(None),
         page: int | None = Query(1, ge=1),
@@ -32,6 +36,9 @@ async def get_hotels(
     """
     Ручка по получению всех отелей с фильтрацией и пагинацией.
     Филтирация настроена по location и title
+    :param date_to:
+    :param db:
+    :param date_from:
     :param location:
     :param title:
     :param page:
@@ -40,11 +47,20 @@ async def get_hotels(
     """
 
     per_page = per_page or 5
-    return await db.hotels.get_all(
+    # return await db.hotels.get_all(
+    #     location=location,
+    #     title=title,
+    #     limit=per_page,
+    #     offset=per_page * (page - 1)
+    # )
+
+    return await db.hotels.get_filtered_by_time(
+        date_from=date_from,
+        date_to=date_to,
         location=location,
         title=title,
         limit=per_page,
-        offset=per_page * (page - 1)
+        offset=per_page * (page - 1),
     )
 
 

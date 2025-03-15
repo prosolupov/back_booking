@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Query, HTTPException
+from datetime import date
 
-from src.schemas.rooms import SRoomsAdd, SRoomsAddRequest, SRoomsEditPUTCHRequest, SRoomsEditPUTCH
+from fastapi import APIRouter, HTTPException, Query
+
+from src.schemas.rooms import SRoomsAdd, SRoomsEditPUTCH, SRoomsAddRequest, SRoomsEditPUTCHRequest
 from src.api.dependencies import DBDep
 
 router = APIRouter(
@@ -12,12 +14,17 @@ router = APIRouter(
 @router.get("/{hotel_id}/rooms")
 async def get_rooms(
         db: DBDep,
+        date_from: date = Query(example="2025-03-09"),
+        date_to: date = Query(example="2025-03-15"),
         hotel_id: int | None = None,
         page: int | None = Query(1, ge=1),
         per_page: int | None = Query(None, ge=1, lt=10),
 ):
     """
     Ручка для получения всех номер одного отеля
+    :param db:
+    :param date_to:
+    :param date_from:
     :param hotel_id:
     :param page:
     :param per_page:
@@ -25,8 +32,10 @@ async def get_rooms(
     """
     per_page = per_page or 5
 
-    return await db.rooms.get_all(
+    return await db.rooms.get_filtered_by_time(
         hotel_id=hotel_id,
+        date_to=date_to,
+        date_from=date_from,
         limit=per_page,
         offset=per_page * (page - 1)
     )
