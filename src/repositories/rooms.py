@@ -1,6 +1,7 @@
 from datetime import date
 
-from sqlalchemy import select, func
+from pydantic import BaseModel
+from sqlalchemy import select, func, update
 
 from src.models.bookings import BookingsOrm
 from src.repositories.base import BaseRepository

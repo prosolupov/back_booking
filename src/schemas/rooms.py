@@ -14,6 +14,7 @@ class SRoomsAddRequest(BaseModel):
     description: str
     price: int
     quantity: int
+    facility_ids: list[int] | None = None
 
 
 class SRooms(SRoomsAdd):

@@ -63,6 +63,15 @@ class BaseRepository:
             return None
         return self.schema.model_validate(model, from_attributes=True)
 
+    async def add_batch(self, data: list[BaseModel]):
+        """
+        Функция по добовлению массива записей
+        :param data:
+        :return:
+        """
+        stmt = insert(self.model).values([item.model_dump() for item in data])
+        await self.session.execute(stmt)
+
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         """
         Функция по изменению записи в БД
