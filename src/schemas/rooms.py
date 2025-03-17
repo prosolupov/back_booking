@@ -26,6 +26,7 @@ class SRoomsEditPUTCHRequest(BaseModel):
     description: str | None = None
     price: int | None = None
     quantity: int | None = None
+    facility_ids: list[int] = []
 
 
 class SRoomsEditPUTCH(BaseModel):

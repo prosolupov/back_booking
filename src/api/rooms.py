@@ -96,24 +96,8 @@ async def edit_all_param_room(
     _room = SRoomsAdd(hotel_id=hotel_id, **rooms_data.model_dump())
     room = await db.rooms.get_one_or_none(id=room_id)
     if room:
-        old_facility = [ids.facility_id for ids in await db.rooms_facilities.get_all(room_id=room_id)]
-        new_facility = rooms_data.facility_ids
-
-        for item in new_facility:
-            if item in old_facility:
-                old_facility.remove(item)
-            else:
-                await db.rooms_facilities.add(
-                    SRoomsFacilitiesAdd(
-                        room_id=room_id,
-                        facility_id=item
-                    ))
-        for i in old_facility:
-            await db.rooms_facilities.delete(
-                room_id=room_id,
-                facility_id=i)
-
         await db.rooms.edit(_room, id=room_id)
+        await db.rooms_facilities.set_room_facilities(room_id, rooms_data.facility_ids)
         await db.commit()
         return {"status": "ok"}
 
@@ -125,38 +109,26 @@ async def edit_one_param_room(
         db: DBDep,
         hotel_id: int,
         room_id: int,
-        rooms_data: SRoomsEditPUTCHRequest):
+        room_data: SRoomsEditPUTCHRequest):
     """
     Ручка для редактирование одного или более полей номера
     :param db:
     :param hotel_id:
     :param room_id:
-    :param rooms_data:
+    :param room_data:
     :return:
     """
-    _room = SRoomsEditPUTCH(hotel_id=hotel_id, **rooms_data.model_dump(exclude_unset=True))
+
+    _room_data_dict = room_data.model_dump(exclude_unset=True)
+    _room = SRoomsEditPUTCH(hotel_id=hotel_id, **_room_data_dict)
     room = await db.rooms.get_one_or_none(id=room_id)
     if room:
-
-        old_facility = [ids.facility_id for ids in await db.rooms_facilities.get_all(room_id=room_id)]
-        new_facility = rooms_data.facility_ids
-
-        for item in new_facility:
-            if item in old_facility:
-                old_facility.remove(item)
-            else:
-                await db.rooms_facilities.add(
-                    SRoomsFacilitiesAdd(
-                        room_id=room_id,
-                        facility_id=item
-                    ))
-        for i in old_facility:
-            await db.rooms_facilities.delete(
-                room_id=room_id,
-                facility_id=i)
-
         await db.rooms.edit(_room, exclude_unset=True, id=room_id, hotel_id=hotel_id)
-        db.commit()
+
+        if "facility_ids" in _room_data_dict:
+            await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=_room_data_dict["facility_ids"])
+
+        await db.commit()
         return {"status": "ok"}
 
     raise HTTPException(status_code=404, detail="Room not found")
