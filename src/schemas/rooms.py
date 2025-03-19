@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from src.schemas.facilities import SFacilities
+
 
 class SRoomsAdd(BaseModel):
     hotel_id: int
@@ -14,11 +16,15 @@ class SRoomsAddRequest(BaseModel):
     description: str
     price: int
     quantity: int
-    facility_ids: list[int] | None = None
+    facility_ids: list[int] = []
 
 
 class SRooms(SRoomsAdd):
     id: int
+
+
+class SRoomWithRels(SRooms):
+    facilities: list[SFacilities]
 
 
 class SRoomsEditPUTCHRequest(BaseModel):
