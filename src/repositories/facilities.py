@@ -2,19 +2,25 @@ from sqlalchemy import delete, insert, select
 
 from src.repositories.base import BaseRepository
 from src.models.facilities import FacilitiesOrm, RoomFacilitiesOrm
-from src.schemas.facilities import SFacilities, SRoomsFacilities
+from src.repositories.mappers.mappers import FacilitiesDataMapper, RoomsFacilitiesDataMapper
 
 
 class FacilitiesRepository(BaseRepository):
     model = FacilitiesOrm
-    schema = SFacilities
+    mapper = FacilitiesDataMapper
 
 
 class RoomsFacilitiesRepository(BaseRepository):
     model = RoomFacilitiesOrm
-    schema = SRoomsFacilities
+    mapper = RoomsFacilitiesDataMapper
 
     async def set_room_facilities(self, room_id: int, facilities_ids: list[int]):
+        """
+        Функция по редактированию удобств комнаты
+        :param room_id:
+        :param facilities_ids:
+        :return:
+        """
         current_facilities_ids_query = (
             select(self.model.facility_id)
             .filter_by(room_id=room_id)
@@ -25,9 +31,6 @@ class RoomsFacilitiesRepository(BaseRepository):
 
         add_facility = list(set(facilities_ids) - set(current_facilities_ids))
         del_facility = list(set(current_facilities_ids) - set(facilities_ids))
-
-        print(f"add_facility: {add_facility}")
-        print(f"del_facility: {del_facility}")
 
         if del_facility:
             del_facility_stmt = (

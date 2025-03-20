@@ -3,12 +3,13 @@ from sqlalchemy import select
 
 from src.repositories.base import BaseRepository
 from src.models.users import UsersOrm
-from src.schemas.users import SUsers, SUsersWithHashedPassword
+from src.repositories.mappers.mappers import SUsersWithHashedPasswordDataMapper, UserDataMapper
+from src.schemas.users import SUsersWithHashedPassword
 
 
 class UsersRepository(BaseRepository):
     model = UsersOrm
-    schema = SUsers
+    mapper = UserDataMapper
 
     async def get_user_with_hashed_password(self, email: EmailStr) -> SUsersWithHashedPassword:
         """
@@ -20,6 +21,6 @@ class UsersRepository(BaseRepository):
         result = await self.session.execute(query)
         model = result.scalars().one()
 
-        return SUsersWithHashedPassword.model_validate(model, from_attributes=True)
+        return SUsersWithHashedPasswordDataMapper.map_to_domain_entity(model)
 
 

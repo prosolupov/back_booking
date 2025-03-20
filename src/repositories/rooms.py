@@ -1,17 +1,18 @@
 from datetime import date
 
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
 
 from src.repositories.base import BaseRepository
 from src.models.rooms import RoomsOrm
+from src.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsDataMapper
 from src.repositories.utils import rooms_ids_for_booking
-from src.schemas.rooms import SRooms, SRoomWithRels
+from src.schemas.rooms import SRoomWithRels
 
 
 class RoomsRepository(BaseRepository):
     model = RoomsOrm
-    schema = SRooms
+    mapper = RoomDataMapper
 
     async def get_filtered_by_time(
             self,
@@ -32,9 +33,9 @@ class RoomsRepository(BaseRepository):
         result = await self.session.execute(query)
         # print(result.scalars().all()[0].facilities[0].title)
 
-        return [SRoomWithRels.model_validate(model, from_attributes=True) for model in result.unique().scalars().all()]
+        return [RoomWithRelsDataMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
 
-    async def get_one_or_none(self, *args, **filter_by):
+    async def get_one_or_none_with_rels(self, *args, **filter_by):
         """
         Функция по получению одной записи переданной модели
         :param args:
@@ -50,4 +51,4 @@ class RoomsRepository(BaseRepository):
         model = result.scalars().one_or_none()
         if model is None:
             return None
-        return SRoomWithRels.model_validate(model, from_attributes=True)
+        return RoomWithRelsDataMapper.map_to_domain_entity(model)

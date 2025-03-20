@@ -52,7 +52,7 @@ async def get_room(db: DBDep, hotel_id: int, room_id: int):
     :return: Room
     """
 
-    return await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id)
+    return await db.rooms.get_one_or_none_with_rels(id=room_id, hotel_id=hotel_id)
 
 
 @router.post("/{hotel_id}/rooms")
