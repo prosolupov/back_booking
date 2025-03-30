@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep
 from src.schemas.facilities import SFacilitiesAdd
@@ -10,9 +11,9 @@ router = APIRouter(
 
 
 @router.get("/")
+@cache()
 async def get_all_facilities(db: DBDep):
-    facility = await db.facilities.get_all()
-    return facility
+    return await db.facilities.get_all()
 
 
 @router.post("/")
