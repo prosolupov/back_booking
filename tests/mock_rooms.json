@@ -23,7 +23,7 @@
      {
          "hotel_id": 3,
          "title": "Номер на 3-х человек",
-         "description": null,
+         "description": "null",
          "price": 4350,
          "quantity": 8
      }
