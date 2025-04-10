@@ -14,14 +14,14 @@ async def test_booking_crud(db):
         date_to=datetime(year=2021, month=2, day=1),
         price=100
     )
-    await db.bookings.add(data_booking)
+    new_booking = await db.bookings.add(data_booking)
 
     #получить бронь и проверить
-    print("step 1")
-    booking = await db.bookings.get_all()
-    assert booking is not None
+    booking = await db.bookings.get_one_or_none(id=new_booking.id)
+    assert booking
+    assert booking.id == new_booking.id
+    assert booking.user_id == new_booking.user_id
 
-    print("step 2")
     #модель для редактирования брони
     data_booking_edit = SBookingAdd(
         room_id=users[0].id,
@@ -30,15 +30,13 @@ async def test_booking_crud(db):
         date_to=datetime(year=2021, month=2, day=1),
         price=1000
     )
-    await db.bookings.edit(data_booking_edit)
-    booking_edit = await db.bookings.get_all()
-    assert booking_edit[0].price == data_booking_edit.price
+    await db.bookings.edit(data_booking_edit, id=new_booking.id)
+    booking_edit = await db.bookings.get_one_or_none(id=new_booking.id)
+    assert booking_edit
+    assert booking_edit.id == new_booking.id
+    assert booking_edit.price == data_booking_edit.price
 
-    print("step 3")
     #удалить бронь и проверить
-    await db.bookings.delete(id=booking[0].id)
-    booking = await db.bookings.get_all(booking)
-    assert booking == []
-
-    #коммит
-    await db.commit()
+    await db.bookings.delete(id=new_booking.id)
+    booking = await db.bookings.get_one_or_none(id=new_booking.id)
+    assert not booking

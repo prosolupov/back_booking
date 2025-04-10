@@ -12,7 +12,7 @@ router = APIRouter(
 
 
 @router.get("/")
-@cache()
+#@cache()
 async def get_all_facilities(db: DBDep):
     return await db.facilities.get_all()
 

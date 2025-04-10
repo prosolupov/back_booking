@@ -7,7 +7,7 @@ from src.schemas.rooms import SRoomsAdd, SRoomsEditPUTCH, SRoomsAddRequest, SRoo
 from src.api.dependencies import DBDep
 
 router = APIRouter(
-    prefix="/hotel",
+    prefix="/hotels",
     tags=["Комнаты"],
 )
 
