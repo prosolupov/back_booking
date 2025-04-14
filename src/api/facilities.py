@@ -11,17 +11,15 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-#@cache()
+@router.get("")
+@cache()
 async def get_all_facilities(db: DBDep):
     return await db.facilities.get_all()
 
 
-@router.post("/")
+@router.post("")
 async def create_facility(db: DBDep, data: SFacilitiesAdd):
     facility = await db.facilities.add(data)
     await db.commit()
-
-    test_task.delay()
 
     return {"status": "ok", "facility": facility}
