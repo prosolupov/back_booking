@@ -24,11 +24,12 @@ async def create_booking(
     """
 
     room = await db.rooms.get_one_or_none(id=data_booking.room_id)
+
     if room is None:
         raise HTTPException(status_code=400, detail="Room not found")
 
     _add_booking = SBookingAdd(user_id=user_id, price=room.price, **data_booking.model_dump())
-    booking = await db.bookings.add(_add_booking)
+    booking = await db.bookings.add_booking(_add_booking)
     await db.commit()
     return {"status": "ok", "data": booking}
 
