@@ -1,4 +1,7 @@
+from httpx import AsyncClient
+
 from src.services.auth import AuthService
+
 
 
 def test_encode_and_decode():
@@ -13,3 +16,6 @@ def test_encode_and_decode():
     assert payload
     assert payload.get("user") == data.get("user")
 
+
+async def auth_services(ac: AsyncClient):
+    register_user = await ac.post()
