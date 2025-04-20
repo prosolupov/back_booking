@@ -62,8 +62,10 @@ class BaseRepository:
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         result = await self.session.execute(stmt)
         model = result.scalars().one()
+
         if model is None:
             return None
+
         return self.mapper.map_to_domain_entity(model)
 
     async def add_batch(self, data: list[BaseModel]):

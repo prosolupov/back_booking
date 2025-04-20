@@ -1,9 +1,7 @@
 from httpx import AsyncClient
 import pytest
 
-from src.api.dependencies import get_current_user_id
-from src.database import engine_null_pool, Base
-from src.services.auth import AuthService
+from tests.conftest import get_db_null_pool
 
 
 @pytest.mark.parametrize("room_id, date_to, date_from, status_code", [
@@ -41,9 +39,9 @@ async def test_add_booking(
 
 @pytest.fixture(scope="module")
 async def delete_all_bookings():
-    async with engine_null_pool.begin() as conn:
-        await conn.execute(Base.metadata.tables.get("bookings").delete())
-        await conn.commit()
+    async for db_m in get_db_null_pool():
+        await db_m.bookings.delete()
+        await db_m.commit()
 
 
 
@@ -53,15 +51,15 @@ async def delete_all_bookings():
     (1, "2024-12-31", "2024-12-12", 3, 200),
 ])
 async def test_add_get_bookings(
-        delete_all_bookings,
-        ac:AsyncClient,
         room_id,
         date_to,
         date_from,
         coll_booking,
-        status_code
+        status_code,
+        delete_all_bookings,
+        authenticated_ac: AsyncClient,
 ):
-    response_add_booking = await ac.post(
+    response_add_booking = await authenticated_ac.post(
         "bookings",
         json={
             "room_id": room_id,
@@ -70,12 +68,7 @@ async def test_add_get_bookings(
         }
     )
 
-    user_id = AuthService().decode_access_token(ac.cookies.get("access_token")).get("id")
-
-    response_get_me_booking = await ac.get(
-        "bookings/me",
-        params={"user_id": user_id}
-    )
+    response_get_me_booking = await authenticated_ac.get("bookings/me")
 
     assert response_add_booking.status_code == status_code
     assert response_get_me_booking.status_code == status_code

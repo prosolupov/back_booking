@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Response
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.api.dependencies import UserIdDep
 from src.schemas.users import SUsersRequestAdd, SUsersAdd, SUsersRequestAuth
@@ -29,7 +30,11 @@ async def register_user(users: SUsersRequestAdd, db: DBDep):
         email=users.email,
         hashed_password=hashed_password,
     )
-    await db.users.add(new_user_data)
+    try:
+        await db.users.add(new_user_data)
+    except IntegrityError:
+        raise HTTPException(status_code=500, detail="duplicate key value 'users_email'")
+
     await db.commit()
     return {'message': 'Ok'}
 
@@ -46,7 +51,11 @@ async def login_user(
     :param response:
     :return: jwt token
     """
-    user = await db.users.get_user_with_hashed_password(data.email)
+    try:
+        user = await db.users.get_user_with_hashed_password(data.email)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="User not found")
+
     if not user:
         raise HTTPException(status_code=401, detail="Email doesn't exist")
 

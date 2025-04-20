@@ -2,8 +2,6 @@ import json
 
 from unittest import mock
 
-from src.services.auth import AuthService
-
 mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 import pytest
@@ -74,8 +72,6 @@ async def authenticated_ac(ac: AsyncClient, register_user):
             "password": "1234"
         }
     )
-
-    print(f"RESPONS: {response_login.json()['access_token']}")
 
     assert response_login.status_code == 200
     assert response_login.cookies.get("access_token")
