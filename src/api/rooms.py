@@ -1,7 +1,9 @@
 from datetime import date
 
 from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy.exc import NoResultFound
 
+from src.exceptions import ObjectNotFoundException, ObjectDoesExist
 from src.schemas.facilities import SRoomsFacilitiesAdd
 from src.schemas.rooms import SRoomsAdd, SRoomsEditPUTCH, SRoomsAddRequest, SRoomsEditPUTCHRequest
 from src.api.dependencies import DBDep
@@ -51,8 +53,12 @@ async def get_room(db: DBDep, hotel_id: int, room_id: int):
     :param room_id:
     :return: Room
     """
+    try:
+        rooms = await db.rooms.get_one_or_none_with_rels(id=room_id, hotel_id=hotel_id)
+    except ObjectNotFoundException as ex:
+        raise HTTPException(status_code=404, detail="Комната не найдена")
 
-    return await db.rooms.get_one_or_none_with_rels(id=room_id, hotel_id=hotel_id)
+    return rooms
 
 
 @router.post("/{hotel_id}/rooms")
@@ -66,7 +72,10 @@ async def create_room(db: DBDep, hotel_id: int, rooms_data: SRoomsAddRequest):
     """
     _room = SRoomsAdd(hotel_id=hotel_id, **rooms_data.model_dump())
 
-    room = await db.rooms.add(_room)
+    try:
+        room = await db.rooms.add(_room)
+    except ObjectDoesExist:
+        raise HTTPException(status_code=404, detail="Отель с таким ID не найден")
 
     list_rooms_facility = [
         SRoomsFacilitiesAdd(
@@ -96,14 +105,14 @@ async def edit_all_param_room(
     :return:
     """
     _room = SRoomsAdd(hotel_id=hotel_id, **rooms_data.model_dump())
-    room = await db.rooms.get_one_or_none(id=room_id)
-    if room:
+    try:
         await db.rooms.edit(_room, id=room_id)
-        await db.rooms_facilities.set_room_facilities(room_id, rooms_data.facility_ids)
-        await db.commit()
-        return {"status": "ok"}
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=404, detail="Такого номера не существует")
 
-    raise HTTPException(status_code=404, detail="Room not found")
+    await db.rooms_facilities.set_room_facilities(room_id, rooms_data.facility_ids)
+    await db.commit()
+    return {"status": "ok"}
 
 
 @router.patch("/{hotel_id}/rooms/{room_id}")
@@ -123,17 +132,17 @@ async def edit_one_param_room(
 
     _room_data_dict = room_data.model_dump(exclude_unset=True)
     _room = SRoomsEditPUTCH(hotel_id=hotel_id, **_room_data_dict)
-    room = await db.rooms.get_one_or_none(id=room_id)
-    if room:
+
+    try:
         await db.rooms.edit(_room, exclude_unset=True, id=room_id, hotel_id=hotel_id)
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=404, detail="Такого номера не существует")
 
-        if "facility_ids" in _room_data_dict:
-            await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=_room_data_dict["facility_ids"])
+    if "facility_ids" in _room_data_dict:
+        await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=_room_data_dict["facility_ids"])
 
-        await db.commit()
-        return {"status": "ok"}
-
-    raise HTTPException(status_code=404, detail="Room not found")
+    await db.commit()
+    return {"status": "ok"}
 
 
 @router.delete("/{hotel_id}/rooms/{room_id}")
@@ -149,10 +158,10 @@ async def delete_room(
     :param room_id:
     :return:
     """
-    room = await db.rooms.get_one_or_none(id=room_id)
-    if room:
+    try:
         await db.rooms.delete(id=room_id, hotel_id=hotel_id)
-        await db.commit()
-        return {"status": "ok"}
+    except ObjectNotFoundException:
+        raise HTTPException(status_code=404, detail="Такого номера не существует")
 
-    raise HTTPException(status_code=404, detail="Room not found")
+    await db.commit()
+    return {"status": "ok"}

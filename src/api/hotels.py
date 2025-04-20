@@ -72,7 +72,7 @@ async def get_one(db: DBDep, hotel_id: int):
     :param hotel_id:
     :return: Hotel
     """
-    return await db.hotels.get_one_or_none(id=hotel_id)
+    return await db.hotels.get_one(id=hotel_id)
 
 
 @router.put("/{hotel_id}")

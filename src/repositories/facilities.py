@@ -1,5 +1,8 @@
+from sqlite3 import IntegrityError
+
 from sqlalchemy import delete, insert, select
 
+from src.exceptions import ObjectNotFoundException
 from src.repositories.base import BaseRepository
 from src.models.facilities import FacilitiesOrm, RoomFacilitiesOrm
 from src.repositories.mappers.mappers import FacilitiesDataMapper, RoomsFacilitiesDataMapper
@@ -26,8 +29,11 @@ class RoomsFacilitiesRepository(BaseRepository):
             .filter_by(room_id=room_id)
         )
 
-        res = await self.session.execute(current_facilities_ids_query)
-        current_facilities_ids = res.scalars().all()
+        try:
+            res = await self.session.execute(current_facilities_ids_query)
+            current_facilities_ids = res.scalars().all()
+        except IntegrityError:
+            raise ObjectNotFoundException
 
         add_facility = list(set(facilities_ids) - set(current_facilities_ids))
         del_facility = list(set(current_facilities_ids) - set(facilities_ids))

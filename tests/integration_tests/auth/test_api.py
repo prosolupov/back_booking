@@ -19,9 +19,9 @@ def test_encode_and_decode():
 
 @pytest.mark.parametrize("email, password, status_code", [
     ("pes@kat.ru", "1234", 200),
-    ("pes@kat.ru", "1234", 500),
+    ("pes@kat.ru", "1234", 409),
     ("pes@kat163.ru", "1234", 200),
-    ("pes@kat163.ru", "1234", 500),
+    ("pes@kat163.ru", "1234", 409),
 ])
 async def test_auth_services_register(
         ac: AsyncClient,

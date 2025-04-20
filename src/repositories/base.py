@@ -1,7 +1,8 @@
 from sqlalchemy import select, insert, delete, update
-from sqlalchemy.orm import relationship, selectinload
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from pydantic import BaseModel
 
+from src.exceptions import ObjectNotFoundException, ObjectDoesExist
 from src.repositories.mappers.base import DataMapper
 
 
@@ -41,7 +42,7 @@ class BaseRepository:
 
     async def get_one_or_none(self, *args, **filter_by):
         """
-        Функция по получению одной записи переданной модели
+        Функция по получению одной записи или ннескольких записей переданной модели
         :param args:
         :param kwargs:
         :return: one record model
@@ -53,6 +54,22 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
+    async def get_one(self, *args, **filter_by):
+        """
+        Функция по получению одной записи переданной модели
+        :param args:
+        :param kwargs:
+        :return: one record model
+        """
+        query = select(self.model).filter_by(**filter_by)
+        result = await self.session.execute(query)
+        try:
+            model = result.scalars().one()
+        except NoResultFound:
+            raise ObjectNotFoundException
+
+        return self.mapper.map_to_domain_entity(model)
+
     async def add(self, data: BaseModel):
         """
         Функция по добавлению записи в БД
@@ -60,11 +77,11 @@ class BaseRepository:
         :return: one record model
         """
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(stmt)
-        model = result.scalars().one()
-
-        if model is None:
-            return None
+        try:
+            result = await self.session.execute(stmt)
+            model = result.scalars().one()
+        except IntegrityError:
+            raise ObjectDoesExist
 
         return self.mapper.map_to_domain_entity(model)
 
@@ -84,8 +101,12 @@ class BaseRepository:
         :param exclude_unset: Флаг put или puch
         :param filter_by:
         """
-        stmt = update(self.model).filter_by(**filter_by).values(**data.model_dump(exclude_unset=exclude_unset))
-        await self.session.execute(stmt)
+        try:
+            stmt = update(self.model).filter_by(**filter_by).values(**data.model_dump(exclude_unset=exclude_unset))
+            await self.session.execute(stmt)
+        except IntegrityError:
+            raise ObjectNotFoundException
+
 
     async def delete(self, **filter_by) -> None:
         """
@@ -93,5 +114,8 @@ class BaseRepository:
         :param filter_by:
         :return: None
         """
-        stmt = delete(self.model).filter_by(**filter_by)
-        await self.session.execute(stmt)
+        try:
+            stmt = delete(self.model).filter_by(**filter_by)
+            await self.session.execute(stmt)
+        except IntegrityError:
+            raise ObjectNotFoundException
