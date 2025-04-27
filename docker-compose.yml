@@ -1,6 +1,6 @@
 services:
   booking_back_services:
-    container_name: ""
+    container_name: "booking_back"
     build:
       context: .
     networks:
@@ -9,9 +9,8 @@ services:
       - env_prod
 
 
-
   booking_celery_worker_services:
-    container_name: ""
+    container_name: "booking_celery_worker"
     build:
       context: .
     networks:
@@ -21,7 +20,7 @@ services:
 
 
   booking_celery_beats_services:
-    container_name: ""
+    container_name: "booking_celery_beats"
     build:
       context: .
     networks:
