@@ -3,3 +3,4 @@ venv
 __pycache__
 .env
 .env_test
+.env_prod
