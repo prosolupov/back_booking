@@ -1,0 +1,36 @@
+services:
+  booking_back_services:
+    container_name: ""
+    build:
+      context: .
+    networks:
+      - myNetwork
+    env_file:
+      - env_prod
+
+
+
+  booking_celery_worker_services:
+    container_name: ""
+    build:
+      context: .
+    networks:
+      - myNetwork
+    env_file:
+      - env_prod
+
+
+  booking_celery_beats_services:
+    container_name: ""
+    build:
+      context: .
+    networks:
+      - myNetwork
+    env_file:
+      - env_prod
+
+
+networks:
+  myNetwork:
+    external: true
+
