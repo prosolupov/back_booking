@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import NoResultFound
+from fastapi import APIRouter
 
 from src.api.dependencies import DBDep, UserIdDep
-from src.exceptions import ObjectNotFoundException
-from src.schemas.bookings import SBookingAdd, SBookingRequest
+from src.exceptions import RoomNotFoundException, RoomNotFoundHTTPException, \
+    HotelNotFoundException, BookingNotFoundException, BookingNotFoundHTTPException
+from src.schemas.bookings import SBookingRequest
+from src.services.bookings import BookingService
 
 router = APIRouter(
     prefix="/bookings",
@@ -13,9 +14,9 @@ router = APIRouter(
 
 @router.post("")
 async def create_booking(
-        db: DBDep,
-        user_id: UserIdDep,
-        data_booking: SBookingRequest,
+    db: DBDep,
+    user_id: UserIdDep,
+    data_booking: SBookingRequest,
 ):
     """
     Ручка для добовления бронирований
@@ -25,18 +26,12 @@ async def create_booking(
     :return: status
     """
     try:
-        room = await db.rooms.get_one(id=data_booking.room_id)
-    except ObjectNotFoundException as ex:
-        raise HTTPException(status_code=400, detail="Номер не найден")
+        booking = await BookingService(db).create_booking(user_id=user_id, data_booking=data_booking)
+    except RoomNotFoundException as ex:
+        raise RoomNotFoundHTTPException from ex
+    except HotelNotFoundException as ex:
+        raise HotelNotFoundException from ex
 
-    try:
-        hotel = await db.hotels.get_one(id=room.hotel_id)
-    except ObjectNotFoundException as ex:
-        raise HTTPException(status_code=400, detail="Отель не найден")
-
-    _add_booking = SBookingAdd(user_id=user_id, price=room.price, **data_booking.model_dump())
-    booking = await db.bookings.add_booking(_add_booking, hotel_id=hotel.id)
-    await db.commit()
     return {"status": "ok", "data": booking}
 
 
@@ -47,13 +42,14 @@ async def get_all_bookings(db: DBDep):
     :param db:
     :return:
     """
-    return await db.bookings.get_all()
+    bookings = await BookingService(db).get_all_bookings()
+    return await bookings
 
 
 @router.get("/me")
 async def get_me_booking(
-        db: DBDep,
-        user_id: UserIdDep,
+    db: DBDep,
+    user_id: UserIdDep,
 ):
     """
     Ручка на получения бронирований пользователя
@@ -61,4 +57,9 @@ async def get_me_booking(
     :param user_id:
     :return:
     """
-    return await db.bookings.get_filtered(user_id=user_id)
+    try:
+        booking = await BookingService(db).get_me_booking(user_id=user_id)
+    except BookingNotFoundException as ex:
+        raise BookingNotFoundHTTPException from ex
+
+    return booking

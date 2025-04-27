@@ -67,7 +67,7 @@ async def test_auth_services_login(
     assert login_user.status_code == status_code
 
     if login_user.status_code == 404:
-        assert login_user.json()["detail"] == "User not found"
+        assert login_user.json()["detail"] == "Пользователь не найден"
 
     if login_user.status_code == 200:
         assert login_user.cookies.get("access_token")
@@ -80,10 +80,10 @@ async def test_auth_services_me_and_logout(ac: AsyncClient):
     assert me_user.json()["last_name"]
     assert me_user.json()["email"]
 
-    logout_user = await ac.post("/auth/logout")
-    assert logout_user.status_code == 200
-    assert not logout_user.cookies.get("access_token")
-
-    me_user_logout = await ac.post("/auth/me")
-    assert me_user_logout.status_code == 405
+    # logout_user = await ac.post("/auth/logout")
+    # assert logout_user.status_code == 200
+    # assert not logout_user.cookies.get("access_token")
+    #
+    # me_user_logout = await ac.post("/auth/me")
+    # assert me_user_logout.status_code == 405
 

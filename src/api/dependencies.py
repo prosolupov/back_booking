@@ -25,7 +25,7 @@ def get_current_user_id(token: str = Depends(get_token)) -> int:
     :return: User ID
     """
     data = AuthService().decode_access_token(token)
-    return data.get('id')
+    return data.get('user_id')
 
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]

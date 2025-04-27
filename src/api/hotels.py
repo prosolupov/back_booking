@@ -2,8 +2,10 @@ from datetime import date
 
 from fastapi import APIRouter, Query, HTTPException
 
+from src.exceptions import ObjectNotFoundException, HotelNotFoundHTTPException
 from src.schemas.hotels import SHotelsAdd, SHotelsPUTCH
 from src.api.dependencies import DBDep
+from src.services.hotels import HotelsService
 
 router = APIRouter(
     prefix='/hotels',
@@ -19,8 +21,7 @@ async def create_hotel(hotel_data: SHotelsAdd, db: DBDep):
     :param db:
     :param hotel_data: HotelOrm (title: str, location: str)
     """
-    hotel = await db.hotels.add(hotel_data)
-    await db.commit()
+    hotel = await HotelsService(db).create_hotel(hotel_data)
     return {"status": "ok", "data": hotel}
 
 
@@ -47,21 +48,16 @@ async def get_hotels(
     :return:
     """
 
-    per_page = per_page or 5
-    # return await db.hotels.get_all(
-    #     location=location,
-    #     title=title,
-    #     limit=per_page,
-    #     offset=per_page * (page - 1)
-    # )
+    if date_to <= date_from:
+        raise HTTPException(status_code=422, detail="Дата заезда не может быть позже даты выезда")
 
-    return await db.hotels.get_filtered_by_time(
+    return await HotelsService(db).get_hotels(
         date_from=date_from,
         date_to=date_to,
         location=location,
         title=title,
-        limit=per_page,
-        offset=per_page * (page - 1),
+        page=page,
+        per_page=per_page
     )
 
 
@@ -72,7 +68,7 @@ async def get_one(db: DBDep, hotel_id: int):
     :param hotel_id:
     :return: Hotel
     """
-    return await db.hotels.get_one(id=hotel_id)
+    return await HotelsService(db).get_one_hotel(hotel_id=hotel_id)
 
 
 @router.put("/{hotel_id}")
@@ -83,31 +79,24 @@ async def edit_all_hotel(db: DBDep, hotel_id: int, schema_hotel: SHotelsAdd):
     :param schema_hotel:
     :return:
     """
-    hotel = await db.hotels.get_one_or_none(id=hotel_id)
-
-    if hotel:
-        await db.hotels.edit(schema_hotel, id=hotel_id)
-        await db.commit()
-        return {"status": "ok"}
-
-    raise HTTPException(status_code=404, detail="Item not found")
+    try:
+        await HotelsService(db).edit_all_hotel(hotel_id=hotel_id, schema_hotel=schema_hotel)
+    except ObjectNotFoundException as ex:
+        raise HotelNotFoundHTTPException
 
 
 @router.patch("/{hotel_id}")
-async def edit_one_param_hotel(db: DBDep, schema_hotel: SHotelsPUTCH, hotel_id: int):
+async def edit_hotel_partially(db: DBDep, schema_hotel: SHotelsPUTCH, hotel_id: int):
     """
     Ручкка для частичного редактирования отеля
     :param schema_hotel:
     :param hotel_id:
     :return:
     """
-    hotel = await db.hotels.get_one_or_none(id=hotel_id)
-    if hotel:
-        await db.hotels.edit(schema_hotel, exclude_unset=True, id=hotel_id)
-        await db.commit()
-        return {"status": "ok"}
-
-    raise HTTPException(status_code=404, detail='Item not found')
+    try:
+        await HotelsService(db).edit_hotel_partially(hotel_id=hotel_id, schema_hotel=schema_hotel)
+    except ObjectNotFoundException as ex:
+        raise HotelNotFoundHTTPException
 
 
 @router.delete("/{hotel_id}")
@@ -117,9 +106,7 @@ async def delete_hotel(db: DBDep, hotel_id: int):
     :param hotel_id:
     :return:
     """
-    hotel = await db.hotels.get_one_or_none(id=hotel_id)
-    if hotel:
-        await db.hotels.delete(id=hotel_id)
-        await db.commit()
-        return {"status": "ok"}
-    raise HTTPException(status_code=404, detail='Item not found')
+    try:
+        await HotelsService(db).delete_hotel(hotel_id=hotel_id)
+    except ObjectNotFoundException as ex:
+        raise HotelNotFoundHTTPException

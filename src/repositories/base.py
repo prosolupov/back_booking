@@ -1,3 +1,4 @@
+from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from pydantic import BaseModel
@@ -80,8 +81,11 @@ class BaseRepository:
         try:
             result = await self.session.execute(stmt)
             model = result.scalars().one()
-        except IntegrityError:
-            raise ObjectDoesExist
+        except IntegrityError as ex:
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectDoesExist
+            else:
+                raise ex
 
         return self.mapper.map_to_domain_entity(model)
 
