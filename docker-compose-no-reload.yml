@@ -1,0 +1,27 @@
+services:
+  booking_back_db_services:
+    image: postgres
+    container_name: "booking_back_db"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - /dev/pg-booking-data:/var/lib/postgresql/data
+    ports:
+      - '6432:5432'
+    networks:
+      - myNetwork
+
+  booking_back_redis_services:
+    image: redis
+    container_name: "booking_back_redis"
+    ports:
+      - "7379:6379"
+    networks:
+      - myNetwork
+
+networks:
+  myNetwork:
+    name: myNetwork
+    driver: bridge

@@ -1,0 +1,15 @@
+services:
+  booking_back_nginx_services:
+    image: nginx
+    container_name: booking_back_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - myNetwork
+    ports:
+      - '443:443'
+
+networks:
+  myNetwork:
+    external: true
+

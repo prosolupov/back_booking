@@ -5,6 +5,8 @@ services:
       context: .
     networks:
       - myNetwork
+#    ports:
+#      - "8080:8000"
     env_file:
       - .env_prod
 
@@ -17,6 +19,7 @@ services:
       - myNetwork
     env_file:
       - .env_prod
+    command: "celery --app=src.tasks.celery_app:celery_instance worker -l INFO"
 
 
   booking_celery_beats_services:
@@ -27,9 +30,8 @@ services:
       - myNetwork
     env_file:
       - .env_prod
-
+    command: "celery --app=src.tasks.celery_app:celery_instance beat -l INFO"
 
 networks:
   myNetwork:
     external: true
-
