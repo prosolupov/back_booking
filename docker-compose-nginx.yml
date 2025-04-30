@@ -4,6 +4,8 @@ services:
     container_name: booking_back_nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+      - var/lib/letsencrypt:/var/lib/letsencrypt
     networks:
       - myNetwork
     ports:
