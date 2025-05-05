@@ -14,6 +14,9 @@ router = APIRouter(
 
 @router.post("")
 async def create_facility(db: DBDep, data: SFacilitiesAdd):
+    """
+    Ручка для создания удобств
+    """
     facility = await FacilityService(db).create_facility(data)
     return {"status": "ok", "facility": facility}
 
@@ -21,4 +24,7 @@ async def create_facility(db: DBDep, data: SFacilitiesAdd):
 @router.get("")
 @cache()
 async def get_all_facilities(db: DBDep):
+    """
+    Получение всех удобств
+    """
     return await FacilityService(db).get_all_facilities()

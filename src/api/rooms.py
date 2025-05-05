@@ -20,10 +20,6 @@ router = APIRouter(
 async def create_room(db: DBDep, hotel_id: int, rooms_data: SRoomsAddRequest):
     """
     Ручка для создания номера
-    :param db:
-    :param hotel_id:
-    :param rooms_data:
-    :return:
     """
     try:
         room = await RoomsService.create_room(hotel_id=hotel_id, rooms_data=rooms_data)
@@ -44,13 +40,6 @@ async def get_rooms(
 ):
     """
     Ручка для получения всех номер одного отеля
-    :param db:
-    :param date_to:
-    :param date_from:
-    :param hotel_id:
-    :param page:
-    :param per_page:
-    :return: Список номеров
     """
 
     if date_to <= date_from:
@@ -71,10 +60,6 @@ async def get_rooms(
 async def get_room(db: DBDep, hotel_id: int, room_id: int):
     """
     Ручка для получения одного номера
-    :param db:
-    :param hotel_id:
-    :param room_id:
-    :return: Room
     """
     try:
         room = RoomsService(db).get_one_or_none_with_rels(hotel_id=hotel_id, room_id=room_id)
@@ -92,11 +77,6 @@ async def edit_all_param_room(
 ):
     """
     Ручка для редактирование всех полей номера
-    :param db:
-    :param hotel_id:
-    :param room_id:
-    :param rooms_data:
-    :return:
     """
     try:
         room = await RoomsService(db).edit_all_param_room(hotel_id=hotel_id, room_id=room_id, rooms_data=rooms_data)
@@ -115,11 +95,6 @@ async def edit_room_partially(
 ):
     """
     Ручка для редактирование одного или более полей номера
-    :param db:
-    :param hotel_id:
-    :param room_id:
-    :param room_data:
-    :return:
     """
     try:
         room = await RoomsService(db).edit_room_partially(hotel_id=hotel_id, room_id=room_id, room_data=room_data)
@@ -136,10 +111,6 @@ async def delete_room(
 ):
     """
     Ручка для удаления номера
-    :param db:
-    :param hotel_id:
-    :param room_id:
-    :return:
     """
     try:
         await RoomsService(db).delete_room(hotel_id=hotel_id, room_id=room_id)

@@ -20,10 +20,6 @@ async def create_booking(
 ):
     """
     Ручка для добовления бронирований
-    :param db:
-    :param user_id:
-    :param data_booking:
-    :return: status
     """
     try:
         booking = await BookingService(db).create_booking(user_id=user_id, data_booking=data_booking)
@@ -39,8 +35,6 @@ async def create_booking(
 async def get_all_bookings(db: DBDep):
     """
     Ручка на получения всех бронирований
-    :param db:
-    :return:
     """
     bookings = await BookingService(db).get_all_bookings()
     return await bookings
@@ -53,9 +47,6 @@ async def get_me_booking(
 ):
     """
     Ручка на получения бронирований пользователя
-    :param db:
-    :param user_id:
-    :return:
     """
     try:
         booking = await BookingService(db).get_me_booking(user_id=user_id)

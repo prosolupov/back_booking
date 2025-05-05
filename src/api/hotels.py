@@ -17,9 +17,6 @@ router = APIRouter(
 async def create_hotel(hotel_data: SHotelsAdd, db: DBDep):
     """
     Ручка на создания нового отеля
-
-    :param db:
-    :param hotel_data: HotelOrm (title: str, location: str)
     """
     hotel = await HotelsService(db).create_hotel(hotel_data)
     return {"status": "ok", "data": hotel}
@@ -38,16 +35,7 @@ async def get_hotels(
     """
     Ручка по получению всех отелей с фильтрацией и пагинацией.
     Филтирация настроена по location и title
-    :param date_to:
-    :param db:
-    :param date_from:
-    :param location:
-    :param title:
-    :param page:
-    :param per_page:
-    :return:
     """
-
     if date_to <= date_from:
         raise HTTPException(status_code=422, detail="Дата заезда не может быть позже даты выезда")
 
@@ -65,19 +53,19 @@ async def get_hotels(
 async def get_one(db: DBDep, hotel_id: int):
     """
     Ручка для получения одного отеля по id
-    :param hotel_id:
-    :return: Hotel
     """
-    return await HotelsService(db).get_one_hotel(hotel_id=hotel_id)
+    try:
+        hotel = await HotelsService(db).get_one_hotel(hotel_id=hotel_id)
+    except ObjectNotFoundException:
+        raise HotelNotFoundHTTPException
+
+    return hotel
 
 
 @router.put("/{hotel_id}")
 async def edit_all_hotel(db: DBDep, hotel_id: int, schema_hotel: SHotelsAdd):
     """
     Ручкка для редактирования отеля
-    :param hotel_id:
-    :param schema_hotel:
-    :return:
     """
     try:
         await HotelsService(db).edit_all_hotel(hotel_id=hotel_id, schema_hotel=schema_hotel)
@@ -89,9 +77,6 @@ async def edit_all_hotel(db: DBDep, hotel_id: int, schema_hotel: SHotelsAdd):
 async def edit_hotel_partially(db: DBDep, schema_hotel: SHotelsPUTCH, hotel_id: int):
     """
     Ручкка для частичного редактирования отеля
-    :param schema_hotel:
-    :param hotel_id:
-    :return:
     """
     try:
         await HotelsService(db).edit_hotel_partially(hotel_id=hotel_id, schema_hotel=schema_hotel)
@@ -103,8 +88,6 @@ async def edit_hotel_partially(db: DBDep, schema_hotel: SHotelsPUTCH, hotel_id: 
 async def delete_hotel(db: DBDep, hotel_id: int):
     """
     Ручка для отеля по id
-    :param hotel_id:
-    :return:
     """
     try:
         await HotelsService(db).delete_hotel(hotel_id=hotel_id)

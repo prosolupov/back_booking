@@ -22,8 +22,6 @@ router = APIRouter(
 async def register_user(users: SUsersRequestAdd, db: DBDep):
     """
     Ручка для регистрации пользователей
-    :param users:
-    :return: status code
     """
 
     try:
@@ -42,9 +40,6 @@ async def login_user(
 ):
     """
     Ручка для авторизации пользователя и генерации jwt токена
-    :param data:
-    :param response:
-    :return: jwt token
     """
     try:
         access_token = await AuthService(db).login_user(data=data)
@@ -64,8 +59,6 @@ async def login_user(
 async def logout_user(response: Response):
     '''
     Ручка для выхода
-    :param response:
-    :return: status code
     '''
     response.delete_cookie('access_token')
     return {'status': 'ok'}
@@ -75,8 +68,6 @@ async def logout_user(response: Response):
 async def get_me(db: DBDep, user_id: UserIdDep):
     """
     Ручка для получения jwt tokena из cookies
-    :param user_id:
-    :return: user
     """
     user = await AuthService(db).get_me(user_id=user_id)
 

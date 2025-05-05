@@ -35,7 +35,7 @@ class HotelsService(BaseService):
         return hotels
 
     async def get_one_hotel(self, hotel_id: int):
-        return await self.db.hotels.get_hotel(id=hotel_id)
+        return await self.db.hotels.get_one(id=hotel_id)
 
     async def edit_all_hotel(self, hotel_id: int, schema_hotel: SHotelsAdd):
         hotel = await self.db.hotels.get_one_or_none(id=hotel_id)
