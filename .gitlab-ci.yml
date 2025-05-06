@@ -5,11 +5,19 @@ stages:
 
 build-job:
   stage: build
+  before_script:
+    - cp ${PROD_ENV} .env_prod
+    - cp ${TEST_ENV} .env_test
   script:
     - docker build -t booking_back_image .
 
 
-test-job:
-  stage: test
+#test-job:
+#  stage: test
+#  script:
+#    - echo "Hello World"
+
+deploy-job:
+  stage: deploy
   script:
-    - echo "Hello World"
+    - docker compose up -d
