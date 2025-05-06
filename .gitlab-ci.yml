@@ -20,4 +20,5 @@ build-job:
 deploy-job:
   stage: deploy
   script:
-    - docker compose up -d
+    - docker compose -f docker-compose-ci.yml -d
+    - docker exec booking_back_nginx nginx -s reload
