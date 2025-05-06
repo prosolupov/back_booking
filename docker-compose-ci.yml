@@ -4,10 +4,6 @@ services:
     image: booking-api-image:latest
     networks:
       - myNetwork
-#    ports:
-#      - "8080:8000"
-    env_file:
-      - .env_prod
 
 
   booking_celery_worker_services:
