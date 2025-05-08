@@ -20,6 +20,8 @@ from src.api.images import router as image_router
 from src.init import redis_manager
 
 
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> None:
     await redis_manager.connect()
@@ -28,7 +30,16 @@ async def lifespan(app: FastAPI) -> None:
     await redis_manager.disconnect()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    description="""
+        booking-hotel API 🚀
+        
+        🧑🏻‍💻 Prosolupov Konstantin
+        ✉️ prosolupovK@yandex.ru
+        💬 https://t.me/Prosolupov
+    """,
+)
 
 app.include_router(auth_router)
 app.include_router(hotels_router)
