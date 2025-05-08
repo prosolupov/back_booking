@@ -1,14 +1,14 @@
 services:
   booking_back_services:
     container_name: "booking_back"
-    image: booking_back_image:latest
+    image: booking_back:latest
     networks:
       - myNetwork
 
 
   booking_celery_worker_services:
     container_name: "booking_celery_worker"
-    image: booking_back_image:latest
+    image: booking_back:latest
     networks:
       - myNetwork
     command: "celery --app=src.tasks.celery_app:celery_instance worker -l INFO"
@@ -16,7 +16,7 @@ services:
 
   booking_celery_beats_services:
     container_name: "booking_celery_beats"
-    image: booking_back_image:latest
+    image: booking_back:latest
     networks:
       - myNetwork
     command: "celery --app=src.tasks.celery_app:celery_instance beat -l INFO"

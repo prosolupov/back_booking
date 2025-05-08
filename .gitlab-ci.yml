@@ -9,7 +9,7 @@ build-job:
     - cp ${PROD_ENV} .env_prod
     - cp ${TEST_ENV} .env_test
   script:
-    - docker build -t booking_back_image .
+    - docker build -t booking_back .
 
 
 #test-job:
