@@ -62,9 +62,10 @@ async def get_room(db: DBDep, hotel_id: int, room_id: int):
     Ручка для получения одного номера
     """
     try:
-        room = RoomsService(db).get_one_or_none_with_rels(hotel_id=hotel_id, room_id=room_id)
+        room = await RoomsService(db).get_one_or_none_with_rels(hotel_id=hotel_id, room_id=room_id)
     except RoomNotFoundException as ex:
         raise RoomNotFoundHTTPException
+
     return room
 
 
