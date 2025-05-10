@@ -1,5 +1,6 @@
 stages:
   - build
+  - migration
   - test
   - deploy
 
@@ -11,11 +12,15 @@ build-job:
   script:
     - docker build -t booking_back .
 
+migration_job:
+  stage: migration
+  script:
+    - docker run --rm --network myNetwork booking_back alembic upgrade head
 
-#test-job:
-#  stage: test
-#  script:
-#    - echo "Hello World"
+test-job:
+  stage: test
+  script:
+    - docker run --rm --network myNetwork booking_back pytest -s -v
 
 deploy-job:
   stage: deploy
